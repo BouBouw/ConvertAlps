@@ -12,7 +12,7 @@ import { SplitScreenLayout }    from '../components/viewer/SplitScreenLayout';
 import { useAppStore }          from '../store/useAppStore';
 import { useJobStore }          from '../store/useJobStore';
 import { ingestionApi, subscribeToJobProgress } from '../api/backendApi';
-import type { Job, Dxf2DFile, Model3D } from '../types';
+import type { Job, Dxf2DFile } from '../types';
 
 // Détection runtime de l'environnement Tauri
 const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;

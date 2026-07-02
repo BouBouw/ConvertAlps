@@ -10,13 +10,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { useAppStore } from '../../store/useAppStore';
 import { useAppSettingsStore } from '../../store/useAppSettingsStore';
 import { clsx } from 'clsx';
-import type { CollisionStatus, ToolpathOperation, StrategyType } from '../../types';
-
-const BG_COLOR: Record<CollisionStatus, number> = {
-  none:      0x060D14,
-  warning:   0x150B00,
-  collision: 0x140000,
-};
+import type { ToolpathOperation, StrategyType } from '../../types';
 
 const TOOLPATH_COLOR: Partial<Record<StrategyType, number>> & { default: number } = {
   face_milling:      0xD6862A,
