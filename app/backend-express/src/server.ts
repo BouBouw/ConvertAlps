@@ -45,13 +45,14 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  // Accepter uniquement les requêtes provenant de la WebView Tauri
-  origin: [
-    'http://localhost:1420',
-    'http://127.0.0.1:1420',
-    'tauri://localhost',
-    'https://tauri.localhost',
-  ],
+  // Accepte toutes les origines localhost / Tauri WebView (loopback uniquement)
+  origin: (origin, callback) => {
+    if (!origin || /localhost|127\.0\.0\.1|tauri\.localhost/.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS: origine non autorisée'));
+    }
+  },
   credentials: false,
 }));
 

@@ -37,6 +37,26 @@ const BASE_URL = import.meta.env.DEV
   ? '/api'
   : `http://127.0.0.1:${BACKEND_PORT}/api`;
 
+/**
+ * Attend que le sidecar Express soit opérationnel (poll /health).
+ * Le binaire pkg prend 2-5 s à démarrer au premier lancement.
+ * @param maxMs Délai maximum (défaut 30 s)
+ */
+export async function waitForBackend(maxMs = 30_000): Promise<void> {
+  const url = `http://127.0.0.1:${BACKEND_PORT}/health`;
+  const deadline = Date.now() + maxMs;
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(1500) });
+      if (res.ok) return;
+    } catch {
+      // Pas encore prêt — on réessaie
+    }
+    await new Promise(r => setTimeout(r, 600));
+  }
+  // Après timeout, on laisse l'app continuer (l'erreur réseau sera affichée dans les modules)
+}
+
 // ── Instance Axios ─────────────────────────────────────────────────────────────
 const apiClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,

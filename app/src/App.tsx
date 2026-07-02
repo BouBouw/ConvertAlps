@@ -1,6 +1,7 @@
 /**
  * App.tsx — Routeur principal de ConvertAlps
  */
+import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout            from './layouts/MainLayout';
 import Module1_Ingestion     from './pages/Module1_Ingestion';
@@ -13,8 +14,33 @@ import ProjectsPage          from './pages/ProjectsPage';
 import SettingsPage          from './pages/SettingsPage';
 import AppSettingsPage       from './pages/AppSettingsPage';
 import { UpdateNotification } from './components/updater/UpdateNotification';
+import { waitForBackend }    from './api/backendApi';
+
+/** Écran de démarrage affiché le temps que le sidecar Express s'initialise */
+function BackendLoader() {
+  return (
+    <div className="fixed inset-0 z-[99999] bg-[#060D14] flex flex-col items-center justify-center gap-5">
+      <div className="w-9 h-9 rounded-full border-2 border-ice-700 border-t-ice-400 animate-spin" />
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-ice-300 text-sm font-medium">Démarrage du serveur…</span>
+        <span className="text-ice-600 text-xs">Initialisation du moteur ConvertAlps</span>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
+  // En production, attendre que le sidecar Express soit prêt avant de rendre l'app
+  const [backendReady, setBackendReady] = useState(import.meta.env.DEV);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) {
+      waitForBackend(30_000).finally(() => setBackendReady(true));
+    }
+  }, []);
+
+  if (!backendReady) return <BackendLoader />;
+
   return (
     <>
       <UpdateNotification />
