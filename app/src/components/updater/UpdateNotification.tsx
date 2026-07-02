@@ -28,9 +28,12 @@ export function UpdateNotification() {
         if (u?.available) {
           setUpdate(u);
           setPhase('available');
+        } else {
+          console.info('[Updater] Aucune mise à jour — version actuelle à jour');
         }
-      } catch {
-        // Silencieux — pas de réseau, repo privé, etc.
+      } catch (e) {
+        // Silencieux en prod ; visible en console pour diagnostic
+        console.warn('[Updater] Vérification échouée :', e);
       }
     }, 5000);
 
