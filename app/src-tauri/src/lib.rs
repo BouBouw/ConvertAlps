@@ -165,11 +165,16 @@ pub fn run() {
         .on_window_event(|window, event| {
             if window.label() == "main" {
                 if let tauri::WindowEvent::Destroyed = event {
+                    // Production : Tauri strip le triple cible → "backend-server.exe"
+                    let _ = std::process::Command::new("taskkill")
+                        .args(["/F", "/IM", "backend-server.exe", "/T"])
+                        .output();
+                    // Dev : binaire avec triple cible complet
                     let _ = std::process::Command::new("taskkill")
                         .args(["/F", "/IM",
                                "backend-server-x86_64-pc-windows-msvc.exe",
                                "/T"])
-                        .output(); // synchrone — on attend la fin avant de continuer
+                        .output();
                 }
             }
         })
