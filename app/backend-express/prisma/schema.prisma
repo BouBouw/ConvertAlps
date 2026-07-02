@@ -1,0 +1,271 @@
+// ============================================================
+// schema.prisma — ConvertAlps FAO Industriel
+// Modélisation : norme ISO 13399, matières, conditions de coupe, audit trail
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODULE 3 : OUTILLAGE — Norme ISO 13399
+// ══════════════════════════════════════════════════════════════
+
+/// Outil coupant au sens ISO 13399 (fraise, foret, taraud, plaquette…)
+model Tool {
+  id              String   @id @default(uuid())
+  iso13399Code    String   @unique  // Code article ISO 13399
+  type            ToolType
+  diameter        Float             // mm — Diamètre nominal (DC)
+  numberOfFlutes  Int               // Nombre de dents/arêtes (ZEF)
+  totalLength     Float             // mm — Longueur totale (LF)
+  cuttingLength   Float             // mm — Longueur coupante (LC)
+  shankDiameter   Float             // mm — Diamètre de queue (DCON)
+  material        ToolMaterial
+  coating         String?           // ex: 'TiAlN', 'TiSiN', 'DLC'
+  insertGrade     String?           // Grade plaquette ex: 'P25', 'K10'
+  manufacturer    String?
+  inStock         Boolean  @default(true)
+  stockQty        Int      @default(0)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  holderId        String?
+  holder          ToolHolder?      @relation(fields: [holderId], references: [id])
+  cuttingConditions CuttingCondition[]
+  auditLogs       AuditLog[]
+
+  @@index([type, diameter])
+  @@index([iso13399Code])
+}
+
+enum ToolType {
+  end_mill
+  ball_end_mill
+  face_mill
+  drill
+  reamer
+  tap
+  boring_bar
+  turning_insert
+  thread_mill
+  grooving_insert
+  form_drill
+}
+
+enum ToolMaterial {
+  hss         // Acier rapide supérieur
+  hss_co      // Acier rapide cobalt
+  carbide     // Carbure monobloc
+  cermets     // Cermet
+  cbn         // Nitrure de bore cubique
+  pcd         // Diamant polycristallin
+}
+
+/// Porte-outil / attachement (système de bridage CN)
+model ToolHolder {
+  id               String   @id @default(uuid())
+  type             String   // 'BT40' | 'HSK63A' | 'CAT50' | 'SK40' | 'HSK-A63'
+  clampingDiameter Float    // mm — Diamètre de serrage mini
+  maxClampingDiam  Float    // mm — Diamètre de serrage maxi
+  stickout         Float    // mm — Dépassement typique
+  manufacturer     String?
+  notes            String?
+
+  tools Tool[]
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODULE 3 : MATIÈRES & CONDITIONS DE COUPE
+// ══════════════════════════════════════════════════════════════
+
+/// Matière usinable avec indice d'usinabilité
+model Material {
+  id                 String           @id @default(uuid())
+  name               String           // Nom commercial
+  code               String           @unique  // ex: 'AA2024-T351', 'C45E', 'Ti6Al4V'
+  category           MaterialCategory
+  hardness           Float?           // HB — Dureté Brinell
+  density            Float            // g/cm³
+  tensileStrength    Float?           // MPa
+  machinabilityIndex Int              // 1-100 (100 = alliage le plus facile)
+  notes              String?
+  createdAt          DateTime         @default(now())
+
+  cuttingConditions CuttingCondition[]
+}
+
+enum MaterialCategory {
+  aluminum    // Aluminium et alliages
+  steel       // Aciers non alliés / faiblement alliés
+  stainless   // Aciers inoxydables
+  titanium    // Titane et alliages
+  cast_iron   // Fontes
+  nickel_alloy // Superalliages base nickel (Inconel, Hastelloy)
+  plastic     // Matières plastiques
+  composite   // Composites (CFRP, GFRP)
+}
+
+/// Conditions de coupe optimisées par couple outil/matière
+/// Basées sur les données fabricant et les essais en atelier
+model CuttingCondition {
+  id         String   @id @default(uuid())
+  toolId     String
+  materialId String
+  Vc         Float    // m/min  — Vitesse de coupe
+  N          Float    // tr/min — Vitesse broche calculée
+  Vf         Float    // mm/min — Vitesse d'avance table
+  fz         Float    // mm/dent — Avance par dent
+  ap         Float    // mm — Profondeur de passe axiale
+  ae         Float    // mm — Largeur de prise de coupe radiale
+  strategy   String?  // Stratégie optimale recommandée
+  notes      String?
+  validatedAt DateTime?  // Date de validation en atelier
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tool     Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@unique([toolId, materialId])
+  @@index([toolId])
+  @@index([materialId])
+}
+
+// ══════════════════════════════════════════════════════════════
+// PROJET & PIÈCE
+// ══════════════════════════════════════════════════════════════
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  reference   String?  // Référence ERP/SAP
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  archivedAt  DateTime?
+
+  parts     Part[]
+  auditLogs AuditLog[]
+}
+
+model Part {
+  id          String   @id @default(uuid())
+  projectId   String
+  name        String
+  revision    String   @default("A")
+  materialId  String?
+  dxfFilePath String?
+  stepFilePath String?
+  quantity    Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  gcodeOps  GcodeOperation[]
+  auditLogs AuditLog[]
+
+  @@index([projectId])
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODULE 5 : OPÉRATION G-CODE
+// ══════════════════════════════════════════════════════════════
+
+/// Enregistrement d'une génération de G-Code (pour l'audit trail)
+model GcodeOperation {
+  id               String          @id @default(uuid())
+  partId           String
+  controller       CNCController
+  gcodeFilePath    String?
+  lineCount        Int
+  estimatedTimeSec Int
+  toolChanges      Int             @default(0)
+  hasCollisionWarn Boolean         @default(false)
+  hasOverstockWarn Boolean         @default(false)
+  notes            String?
+  generatedAt      DateTime        @default(now())
+
+  part      Part       @relation(fields: [partId], references: [id], onDelete: Cascade)
+  auditLogs AuditLog[]
+
+  @@index([partId])
+  @@index([generatedAt])
+}
+
+enum CNCController {
+  fanuc
+  heidenhain
+  siemens
+  haas
+  mazak
+  okuma
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODULE 5 & TRANSVERSE : AUDIT TRAIL (traçabilité industrielle)
+// Enregistre chaque action critique pour la conformité qualité
+// ══════════════════════════════════════════════════════════════
+
+/// Journal d'audit immuable (conforme aux exigences de traçabilité industrielle)
+model AuditLog {
+  id              String    @id @default(uuid())
+  // Qui a déclenché l'action
+  userId          String?   // Opérateur (si auth activée)
+  userLabel       String?   // Nom lisible "Jean Dupont"
+  // Quoi
+  action          AuditAction
+  entityType      String    // 'GcodeOperation' | 'Part' | 'Tool' | etc.
+  entityId        String?
+  // Détails métier (JSON libre)
+  details         Json
+  // Alertes
+  hadCollision    Boolean  @default(false)
+  hadOverstock    Boolean  @default(false)
+  collisionCount  Int      @default(0)
+  // Contexte machine
+  machineName     String?
+  targetController String?
+  // Intégrité (signature HMAC-SHA256 du contenu)
+  signature       String?
+  // Quand
+  timestamp       DateTime @default(now())
+
+  // Relations optionnelles
+  projectId       String?
+  project         Project?        @relation(fields: [projectId], references: [id])
+  partId          String?
+  part            Part?           @relation(fields: [partId], references: [id])
+  toolId          String?
+  tool            Tool?           @relation(fields: [toolId], references: [id])
+  gcodeOpId       String?
+  gcodeOp         GcodeOperation? @relation(fields: [gcodeOpId], references: [id])
+
+  @@index([timestamp])
+  @@index([action])
+  @@index([userId])
+  @@index([entityType, entityId])
+}
+
+enum AuditAction {
+  GCODE_GENERATED       // Génération G-Code
+  GCODE_EXPORTED        // Export fichier .nc
+  SIMULATION_STARTED    // Simulation cinématique lancée
+  SIMULATION_COMPLETED  // Simulation terminée sans collision
+  COLLISION_DETECTED    // Collision critique détectée → simulation stoppée
+  OVERSTOCK_DETECTED    // Surépaisseur détectée
+  PART_CREATED          // Nouvelle pièce créée
+  PART_UPDATED          // Pièce modifiée
+  TOOL_ADDED            // Outil ajouté au magasin
+  TOOL_MODIFIED         // Outil modifié
+  PROJECT_CREATED       // Projet créé
+  QUOTE_GENERATED       // Devis généré
+  ERP_EXPORTED          // Export ERP (SAP/Clipper/Sage)
+}

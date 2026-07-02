@@ -1,0 +1,55 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "ConvertAlps",
+  "version": "0.1.0",
+  "identifier": "com.convertalps.fao",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "ConvertAlps — Logiciel FAO Industriel",
+        "width": 1440,
+        "height": 900,
+        "minWidth": 1024,
+        "minHeight": 700,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": false,
+        "shadow": true,
+        "transparent": false,
+        "theme": "Dark"
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDdDODM5Rjc0NTI2MTczMUIKUldRYmMyRlNkSitEZkdxbVZlbnlEMXU0UTFYaUp6Uk82aE15anF4Mk1XZ3kxK1pReHd1Z3RYci8K",
+      "endpoints": [
+        "https://github.com/BouBouw/ConvertAlps/releases/latest/download/latest.json"
+      ],
+      "dialog": false
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "externalBin": [
+      "binaries/backend-server"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

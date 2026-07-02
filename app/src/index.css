@@ -1,0 +1,366 @@
+﻿/* ============================================================
+ * ConvertAlps FAO — Design System v2 (Blue Ice Premium Dark)
+ * Palette : #F7FBFD · #D6E6EF · #7FA6B8 · #2A3E4B
+ * ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Keyframes (defined here so @apply isn't needed) ──────────────────────── */
+@keyframes ca-slide-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ca-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── CSS design tokens (dark default) ──────────────────────────────────────── */
+/* Palette vars use RGB channels (R G B) so Tailwind opacity modifiers work:   */
+/* bg-navy-850/80 → rgb(var(--navy-850) / 0.8) — changes automatically w/ theme */
+:root {
+  --ice-50:  247 251 253;
+  --ice-100: 235 244 249;
+  --ice-200: 214 230 239;
+  --ice-300: 184 211 227;
+  --ice-400: 154 191 212;
+  --ice-500: 127 166 184;
+  --ice-600: 91 142 166;
+  --ice-700: 61 110 133;
+  --ice-800: 42 62 75;
+  --ice-900: 26 45 62;
+  --ice-950: 13 27 37;
+
+  --navy-950: 6 13 20;
+  --navy-900: 10 21 32;
+  --navy-850: 13 27 37;
+  --navy-800: 17 30 43;
+  --navy-700: 22 34 48;
+  --navy-600: 26 42 56;
+  --navy-500: 30 48 72;
+  --navy-400: 36 60 82;
+  --navy-300: 42 62 75;
+
+  /* ── Semantic tokens (change with theme) ── */
+  --bg-app:         rgb(var(--navy-950));
+  --bg-sidebar:     rgb(var(--navy-850));
+  --bg-toolbar:     rgb(var(--navy-850) / 0.80);
+  --bg-panel:       rgb(var(--navy-700) / 0.80);
+  --bg-panel-hdr:   rgb(var(--navy-800) / 0.60);
+  --bg-card:        rgb(var(--navy-700) / 0.50);
+  --bg-input:       rgb(var(--navy-700) / 0.80);
+  --bg-btn-sec:     rgb(var(--navy-700) / 0.60);
+  --bg-btn-sec-hov: rgb(var(--navy-600));
+  --bg-hover:       rgb(var(--navy-600) / 0.20);
+
+  --border:         rgb(var(--navy-400) / 0.40);
+  --border-subtle:  rgb(var(--navy-400) / 0.20);
+  --border-input:   rgb(var(--navy-400) / 0.50);
+  --border-strong:  rgb(var(--navy-400) / 0.60);
+
+  --text-primary:   rgb(var(--ice-50));
+  --text-secondary: rgb(var(--ice-200));
+  --text-muted:     rgb(var(--ice-500) / 0.70);
+  --text-faint:     rgb(var(--ice-500) / 0.50);
+}
+
+/* ── Light theme overrides ──────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --ice-50:  26 45 62;
+  --ice-100: 42 74 100;
+  --ice-200: 42 74 100;
+  --ice-300: 61 110 133;
+  --ice-400: 74 122 148;
+  --ice-500: 61 110 133;
+  --ice-600: 91 142 166;
+  --ice-700: 127 166 184;
+  --ice-800: 75 110 130;   /* light-mode: dark enough for muted text at /40–/70 */
+  --ice-900: 155 190 210;
+  --ice-950: 195 220 235;
+
+  --navy-950: 235 244 249;
+  --navy-900: 228 237 243;
+  --navy-850: 217 231 238;
+  --navy-800: 204 223 233;
+  --navy-700: 189 212 224;
+  --navy-600: 174 201 215;
+  --navy-500: 154 191 212;
+  --navy-400: 127 166 184;
+  --navy-300: 91 142 166;
+
+  --bg-app:         rgb(var(--navy-950));
+  --bg-sidebar:     rgb(var(--navy-850));
+  --bg-toolbar:     rgb(var(--navy-850) / 0.80);
+  --bg-panel:       rgba(255,255,255,0.90);
+  --bg-panel-hdr:   rgb(var(--navy-800) / 0.60);
+  --bg-card:        rgba(255,255,255,0.70);
+  --bg-input:       rgba(255,255,255,0.95);
+  --bg-btn-sec:     rgb(var(--navy-700) / 0.60);
+  --bg-btn-sec-hov: rgb(var(--navy-600));
+  --bg-hover:       rgb(var(--navy-400) / 0.12);
+
+  --border:         rgb(var(--navy-400) / 0.40);
+  --border-subtle:  rgb(var(--navy-400) / 0.20);
+  --border-input:   rgb(var(--navy-400) / 0.50);
+  --border-strong:  rgb(var(--navy-400) / 0.60);
+
+  --text-primary:   rgb(var(--ice-50));
+  --text-secondary: rgb(var(--ice-200));
+  --text-muted:     rgb(var(--ice-500) / 0.70);
+  --text-faint:     rgb(var(--ice-500) / 0.50);
+
+  color-scheme: light;
+}
+
+[data-theme="light"] html { background: #EBF4F9; }
+[data-theme="light"] body { background: #EBF4F9; color: #111E2B; }
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html {
+    height: 100%;
+    background: rgb(var(--navy-950));
+    color-scheme: dark;
+  }
+
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  body {
+    background: rgb(var(--navy-950));
+    color: rgb(var(--ice-50));
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    user-select: none;
+  }
+
+  ::-webkit-scrollbar        { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track  { background: transparent; }
+  ::-webkit-scrollbar-thumb  { background: rgba(127,166,184,0.18); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(127,166,184,0.35); }
+
+  ::selection { background: rgba(127,166,184,0.25); color: rgb(var(--ice-50)); }
+}
+
+@layer components {
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   * BUTTONS
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  .btn {
+    @apply inline-flex items-center gap-1.5 rounded-md text-xs font-medium
+           transition-all duration-150 select-none cursor-pointer
+           disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none
+           focus-visible:outline-none;
+  }
+
+  .btn-md { @apply px-3 py-1.5; }
+  .btn-sm { @apply px-2 py-1; }
+  .btn-lg { @apply px-4 py-2; }
+
+  /* Primary */
+  .btn-primary {
+    @apply btn btn-md;
+    background-color: rgb(var(--ice-600));
+    color: #F7FBFD;
+    border: 1px solid rgba(127,166,184,0.20);
+    box-shadow: 0 0 0 1px rgba(127,166,184,0.10), 0 2px 8px rgba(6,13,20,0.4);
+  }
+  .btn-primary:hover:not(:disabled) { background-color: rgb(var(--ice-500)); }
+  .btn-primary:active:not(:disabled) { background-color: rgb(var(--ice-700)); }
+
+  /* Secondary */
+  .btn-secondary {
+    @apply btn btn-md;
+    background-color: var(--bg-btn-sec);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-input);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background-color: var(--bg-btn-sec-hov);
+    border-color: var(--border-strong);
+  }
+  .btn-secondary:active:not(:disabled) { background-color: rgb(var(--navy-500)); }
+
+  /* Ghost */
+  .btn-ghost {
+    @apply btn btn-md;
+    background-color: transparent;
+    color: rgb(var(--ice-500));
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background-color: rgb(var(--navy-600));
+    color: rgb(var(--ice-200));
+  }
+
+  /* Danger */
+  .btn-danger {
+    @apply btn btn-md;
+    background-color: rgba(69,10,10,0.30);
+    color: #f87171;
+    border: 1px solid rgba(127,29,29,0.40);
+  }
+  .btn-danger:hover:not(:disabled) { background-color: rgba(69,10,10,0.50); color: #fca5a5; }
+  .btn-danger:active:not(:disabled) { background-color: rgba(69,10,10,0.80); }
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   * INPUTS & FORM CONTROLS
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  .input {
+    @apply rounded-md px-3 py-1.5 text-xs outline-none
+           transition-all duration-150;
+    background-color: var(--bg-input);
+    color: var(--text-primary);
+    border: 1px solid var(--border-input);
+  }
+  .input::placeholder { color: var(--text-faint); }
+  .input:hover { border-color: var(--border-strong); }
+  .input:focus {
+    border-color: rgb(var(--ice-500));
+    background-color: var(--bg-input);
+    box-shadow: 0 0 0 3px rgba(127,166,184,0.10);
+  }
+
+  .input-sm { @apply px-2.5 py-1 text-[11px]; }
+
+  .select {
+    @apply input appearance-none cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M5 6L0 0h10z' fill='%237FA6B8' opacity='.6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   * PANELS & CARDS
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  .panel {
+    @apply rounded-lg overflow-hidden;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 0 rgba(127,166,184,0.06) inset, 0 8px 32px rgba(6,13,20,0.5);
+  }
+
+  .panel-header {
+    @apply flex items-center gap-2 px-4 py-2.5
+           text-[11px] font-semibold uppercase tracking-widest;
+    background-color: var(--bg-panel-hdr);
+    border-bottom: 1px solid var(--border);
+    color: rgb(var(--ice-500));
+  }
+
+  .card {
+    @apply rounded-lg p-4;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+  }
+
+  .module-toolbar {
+    @apply flex items-center gap-3 px-5 py-3 backdrop-blur-sm shrink-0;
+    background-color: var(--bg-toolbar);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .module-title { @apply flex items-center gap-2.5; }
+
+  .module-icon {
+    @apply w-8 h-8 rounded-lg flex items-center justify-center shrink-0;
+    background-color: rgba(127,166,184,0.10);
+    border: 1px solid rgba(127,166,184,0.15);
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   * BADGES
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-1.5 py-0.5
+           rounded text-[10px] font-semibold;
+    border-width: 1px;
+    border-style: solid;
+  }
+
+  .badge-ice   { background-color: rgba(42,62,75,0.40); color: rgb(var(--ice-400)); border-color: rgba(42,62,75,0.60); }
+  .badge-green { background-color: rgba(6,78,59,0.30);  color: #34d399; border-color: rgba(6,78,59,0.40); }
+  .badge-amber { background-color: rgba(120,53,15,0.30); color: #fbbf24; border-color: rgba(120,53,15,0.40); }
+  .badge-red   { background-color: rgba(69,10,10,0.30);  color: #f87171; border-color: rgba(69,10,10,0.40); }
+  .badge-blue  { background-color: rgba(26,45,62,0.50); color: rgb(var(--ice-300)); border-color: rgba(42,62,75,0.40); }
+  .badge-gray  { background-color: rgba(26,42,56,0.60); color: rgb(var(--ice-500)); border-color: rgba(36,60,82,0.40); }
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   * PROPERTY ROWS
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  .prop-row {
+    @apply flex items-center justify-between px-4 py-1.5 text-xs
+           transition-colors duration-100;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .prop-row:last-child { border-bottom: none; }
+  .prop-row:hover { background-color: var(--bg-hover); }
+
+  .prop-label {
+    @apply block text-[11px] mb-0.5 leading-tight;
+    color: rgb(var(--ice-500) / 0.80);
+  }
+  .prop-value {
+    @apply font-mono text-[11px];
+    color: rgb(var(--ice-100));
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   * SECTION HEADER
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  .section-header { @apply panel-header; }
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   * SETTINGS INPUT
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  .settings-input { @apply input w-full; }
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   * ERROR BAR
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  .error-bar {
+    @apply flex items-center gap-2.5 px-5 py-2 text-xs shrink-0;
+    animation: ca-slide-up 0.2s ease-out;
+    background-color: rgba(69,10,10,0.40);
+    border-bottom: 1px solid rgba(127,29,29,0.40);
+    color: #f87171;
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   * DIVIDER
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  .divider {
+    @apply h-px my-1;
+    background-color: var(--border-subtle);
+  }
+
+  kbd {
+    @apply inline-flex items-center px-1.5 py-0.5 rounded
+           text-[9px] font-mono;
+    background-color: var(--bg-btn-sec);
+    border: 1px solid var(--border-input);
+    color: var(--text-muted);
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.4);
+  }
+}
