@@ -157,6 +157,22 @@ pub fn run() {
             }
             Ok(())
         })
+        // ── Tuer le sidecar quand la fenêtre principale se ferme ──────────────
+        // Indispensable pour que l'installeur NSIS (mise à jour manuelle) puisse
+        // écraser backend-server.exe sans erreur «fichier verrouillé».
+        // Le handler s'exécute de façon synchrone : taskkill attend la fin avant
+        // que le processus Tauri se termine.
+        .on_window_event(|window, event| {
+            if window.label() == "main" {
+                if let tauri::WindowEvent::Destroyed = event {
+                    let _ = std::process::Command::new("taskkill")
+                        .args(["/F", "/IM",
+                               "backend-server-x86_64-pc-windows-msvc.exe",
+                               "/T"])
+                        .output(); // synchrone — on attend la fin avant de continuer
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             encrypt_data,
             decrypt_data,
