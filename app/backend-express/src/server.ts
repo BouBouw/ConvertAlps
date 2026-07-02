@@ -108,6 +108,14 @@ app.get('/health', (_req, res) => {
   });
 });
 
+// ── Arrêt propre à la demande de l'updater Tauri ─────────────────────────────
+// Appelé par le frontend AVANT d'exécuter le nouvel installeur NSIS,
+// sinon Windows refuse d'écraser backend-server.exe (fichier verrouillé).
+app.post('/shutdown', (_req, res) => {
+  res.json({ status: 'shutting down' });
+  setTimeout(() => process.exit(0), 200);
+});
+
 // ── Gestion 404 & erreurs globales ─────────────────────────────────────────────
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);

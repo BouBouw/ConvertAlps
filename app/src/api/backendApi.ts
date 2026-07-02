@@ -38,6 +38,24 @@ const BASE_URL = import.meta.env.DEV
   : `http://127.0.0.1:${BACKEND_PORT}/api`;
 
 /**
+ * Demande au sidecar Express de s'arrêter proprement avant une mise à jour.
+ * Sans ça, le NSIS installer ne peut pas écraser backend-server.exe (fichier
+ * verrouillé par Windows tant que le processus tourne).
+ */
+export async function shutdownBackend(): Promise<void> {
+  try {
+    await fetch(`http://127.0.0.1:${BACKEND_PORT}/shutdown`, {
+      method: 'POST',
+      signal: AbortSignal.timeout(2000),
+    });
+    // Attendre que le processus se termine réellement
+    await new Promise(r => setTimeout(r, 1200));
+  } catch {
+    // Ignore — le process est peut-être déjà arrêté
+  }
+}
+
+/**
  * Attend que le sidecar Express soit opérationnel (poll /health).
  * Le binaire pkg prend 2-5 s à démarrer au premier lancement.
  * @param maxMs Délai maximum (défaut 30 s)

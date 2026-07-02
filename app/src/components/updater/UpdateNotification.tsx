@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { check, type Update } from '@tauri-apps/plugin-updater';
 import { relaunch }           from '@tauri-apps/plugin-process';
 import { Download, X, RefreshCw, AlertCircle } from 'lucide-react';
+import { shutdownBackend }    from '../../api/backendApi';
 
 type Phase = 'idle' | 'available' | 'downloading' | 'ready' | 'error';
 
@@ -46,6 +47,9 @@ export function UpdateNotification() {
     if (!update) return;
     setPhase('downloading');
     setProgress(0);
+
+    // Arrêter le sidecar avant l'installation pour libérer backend-server.exe
+    await shutdownBackend();
 
     let downloaded  = 0;
     let totalLength = 0;
